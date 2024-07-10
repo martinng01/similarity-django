@@ -56,6 +56,7 @@
             fetch('/db_status/')
               .then(response => response.json())
               .then(data => {
+                console.log(data)
                 if (data.exists) {
                   clearInterval(interval);
                   document.getElementById('loadingScreen').style = 'display: none!important';
@@ -80,7 +81,6 @@
     fetch('/db_status/')
       .then(response => response.json())
       .then(data => {
-        console.log(data)
         if (data.exists) {
           document.getElementById('container').style = '';
           document.getElementById('loadingScreen').style = 'display: none!important';
@@ -93,6 +93,23 @@
     const handleTextInput = () => {
       const query = document.getElementById('text').value
       const k = document.getElementById('k').value
+
+      document.getElementById('text').classList.remove('is-invalid')
+      document.getElementById('k').classList.remove('is-invalid')
+
+
+      if (query === '') {
+        document.getElementById('text').classList.add('is-invalid')
+      }
+
+      if (k === '') {
+        document.getElementById('k').classList.add('is-invalid')
+      }
+
+      if (query === '' || k === '') {
+        return
+      }
+
 
       document.getElementById('output').innerText = ''
 

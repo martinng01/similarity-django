@@ -31,7 +31,7 @@ def build_database():
     # shibing624/text2vec-base-chinese
     # uer/sbert-base-chinese-nli
     sbert_embed = HuggingFaceEmbeddings(
-        model_name="shibing624/text2vec-base-chinese")
+        model_name="uer/sbert-base-chinese-nli")
 
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n"], chunk_size=1, chunk_overlap=0, keep_separator=False
@@ -42,7 +42,7 @@ def build_database():
     inf_splits = text_splitter.split_documents(inf_docs)
 
     Chroma.from_documents(
-        documents=inf_splits[:5000],  # Array split here for testing
+        documents=inf_splits[:1000],  # Array split here for testing
         collection_name="informal",
         embedding=sbert_embed,
         persist_directory=CHROMA_DB_DIRECTORY
