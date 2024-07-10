@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Similar Sentences Website</title>
+  <link rel="stylesheet" type="text/css" href="https://bootswatch.com/5/lux/bootstrap.min.css" />
+</head>
+
+<body>
+  <div id="loadingScreen" style="display: none" class="d-flex justify-content-center align-items-center vh-100">
+    <div class="text-center w-75">
+      <h4 id="loadingMessage">Initializing...</h4>
+      <!-- Bootstrap Progress Bar -->
+      <div class="progress mt-3" role="progressbar" aria-label="Initializing..." aria-valuenow="0" aria-valuemin="0"
+        aria-valuemax="100">
+        <div id="loadingProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+          style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+  <div id="container" class="container px-4 py-3 text-center" style="display: none">
+    <div class="row mt-5">
+      <div class="col">
+        <p class="text-start px-3 my-2 fw-medium"><u>Input</u></p>
+        <textarea class="form-control" id="text" placeholder="Enter text here"
+          style="height: 200px; resize: none"></textarea><br />
+        <div class="input-group">
+          <input type="number" class="form-control float-start" id="k">
+          <button class="btn btn-primary float-end" id="submit-btn">Submit</button>
+        </div>
+      </div>
+      <div class="col">
+        <p class="text-start px-3 my-2 fw-medium"><u>Output</u></p>
+        <div class="form-control text-start" style="height: 200px; resize: none">
+          <p id="output-placeholder">Similar sentences here</p>
+          <div hidden id="output-loading">
+            <div class="spinner-grow spinner-grow-sm mx-1" style="width: 0.8rem; height: 0.8rem;"></div>
+            <div class="spinner-grow spinner-grow-sm mx-1" style="width: 0.8rem; height: 0.8rem;"></div>
+            <div class="spinner-grow spinner-grow-sm mx-1" style="width: 0.8rem; height: 0.8rem;"></div>
+          </div>
+          <p id="output"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var progress_n = 0;
+    function buildDatabase() {
+      fetch('/build_db/')
+        .then(() => {
+          // Start checking the database status every 2 seconds
+          const interval = setInterval(() => {
+            fetch('/db_status/')
+              .then(response => response.json())
+              .then(data => {
+                if (data.exists) {
+                  clearInterval(interval);
+                  document.getElementById('loadingScreen').style = 'display: none!important';
+                  document.getElementById('container').style = '';
+                } else {
+                  // Update progress bar and message
+                  const progressBar = document.getElementById('loadingProgressBar');
+                  const progressMessages = [
+                    "Building database...",
+                    "Getting things ready..."
+                  ];
+                  const progress = (progress_n + 1) / progressMessages.length * 100;
+                  progressBar.style.width = progress + '%';
+                  document.getElementById('loadingMessage').innerText = progressMessages[progress_n];
+                  if (progressMessages.length > progress_n + 1) progress_n++;
+                }
+              });
+          }, 2000);
+        });
+    }
+
+    fetch('/db_status/')
+      .then(response => response.json())
+      .then(data => {
+        console.log(data)
+        if (data.exists) {
+          document.getElementById('container').style = '';
+          document.getElementById('loadingScreen').style = 'display: none!important';
+        } else {
+          document.getElementById('loadingScreen').style.display = '';
+          buildDatabase();
+        }
+      });
+
+    const handleTextInput = () => {
+      const query = document.getElementById('text').value
+      const k = document.getElementById('k').value
+
+      document.getElementById('output').innerText = ''
+
+      if (query === '') {
+        document.getElementById('output-placeholder').hidden = false
+        return
+      } else {
+        document.getElementById('output-placeholder').hidden = true
+        document.getElementById('output-loading').hidden = false
+      }
+
+      console.log(JSON.stringify({ query: query, k: k }))
+
+      fetch('/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `query=${query}&k=${k}`,
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('output-loading').hidden = true
+          document.getElementById('output').innerText = data.sentences.join('\n\n')
+        })
+    }
+
+    document.getElementById('submit-btn').addEventListener('click', handleTextInput);
+  </script>
+</body>
+
+</html>

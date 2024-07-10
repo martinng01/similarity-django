@@ -6,10 +6,10 @@ from .logic import database_exists, setup_backend, get_similar_sentences
 def index(request):
     if request.method == 'POST':
         query = request.POST.get('query')
-        k = request.POST.get('k')
+        k = int(request.POST.get('k'))
         result = get_similar_sentences(query, k)
-        return JsonResponse({'translation': result})
-    return render(request, 'translation/index.html')
+        return JsonResponse({'sentences': result})
+    return render(request, 'similarity/index.html')
 
 
 def db_status(request):
