@@ -24,15 +24,16 @@
       <div class="col">
         <p class="text-start px-3 my-2 fw-medium"><u>Input</u></p>
         <textarea class="form-control" id="text" placeholder="Enter text here"
-          style="height: 200px; resize: none"></textarea><br />
+          style="min-height:200px; resize: none;"></textarea><br />
         <div class="input-group">
-          <input type="number" class="form-control float-start" id="k">
-          <button class="btn btn-primary float-end" id="submit-btn">Submit</button>
+          <input type="number" class="form-control" id="k">
+          <button class="btn btn-primary" id="clear-text">Clear text</button>
+          <button class="btn btn-primary" id="submit-btn">Submit</button>
         </div>
       </div>
       <div class="col">
         <p class="text-start px-3 my-2 fw-medium"><u>Output</u></p>
-        <div class="form-control text-start" style="height: 200px; resize: none">
+        <div id="output-div" class="form-control text-start" style="min-height:200px; resize: none; overflow-y:auto">
           <p id="output-placeholder">Similar sentences here</p>
           <div hidden id="output-loading">
             <div class="spinner-grow spinner-grow-sm mx-1" style="width: 0.8rem; height: 0.8rem;"></div>
@@ -117,9 +118,35 @@
         .then(data => {
           document.getElementById('output-loading').hidden = true
           document.getElementById('output').innerText = data.sentences.join('\n\n')
+          updateTextAreaHeights()
         })
     }
 
+    const handleClearText = () => {
+      document.getElementById('text').value = ''
+      document.getElementById('output').innerText = ''
+      document.getElementById('output-placeholder').hidden = false
+
+      updateTextAreaHeights()
+    }
+
+    const updateTextAreaHeights = () => {
+      const inputArea = document.getElementById('text')
+      const outputArea = document.getElementById('output-div')
+      const minHeight = 200;
+      const maxHeight = 500;
+
+      inputArea.style.height = minHeight + 'px';
+      outputArea.style.height = minHeight + 'px';
+
+      var height = Math.min(maxHeight, Math.max(minHeight, inputArea.scrollHeight, outputArea.scrollHeight));
+
+      inputArea.style.height = height + 'px';
+      outputArea.style.height = height + 'px';
+    }
+
+    document.getElementById('clear-text').addEventListener('click', handleClearText);
+    document.getElementById('text').addEventListener('input', updateTextAreaHeights);
     document.getElementById('submit-btn').addEventListener('click', handleTextInput);
   </script>
 </body>
